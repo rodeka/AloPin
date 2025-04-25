@@ -1,6 +1,6 @@
 #include <check.h>
 #include <openssl/evp.h>
-#include "pbkdf2.h"
+#include "crypto/pbkdf2.h"
 
 START_TEST(test_pbkdf2_same_as_OpenSSL){
     const char password[] = {'1', '2', '3', '4'};

@@ -1,45 +1,81 @@
 cmake_minimum_required(VERSION 3.20)
-project(AloPin C)
+project(AloPin C CXX)
 
-# common flags
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-add_compile_options(-Wall -Wextra -Werror)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# WARNINGS
+# add_compile_options(-Wall)
+# if(WIN32)
+#     add_compile_options(-WX)
+# elseif()
+#     add_compile_options(-Wextra)
+# endif()
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<CONFIG>")
+
+set(SOURCE_CODE_DIR ${PROJECT_SOURCE_DIR}/src)
+set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
 # find libs
 find_package(OpenSSL 1.1 REQUIRED COMPONENTS Crypto)
 
-# link pbkdf2 lib
-add_library(pbkdf2 STATIC
-    src/crypto/pbkdf2.c
-)
-target_include_directories(pbkdf2
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-)
-target_link_libraries(pbkdf2
-    PUBLIC OpenSSL::Crypto
+# crypto lib
+
+add_library(crypto STATIC
+    ${SOURCE_CODE_DIR}/crypto/pbkdf2.c
+    ${SOURCE_CODE_DIR}/crypto/scrypt.c
 )
 
-# link scrypt lib
-add_library(scrypt STATIC
-    src/crypto/scrypt.c
+target_include_directories(crypto
+    PRIVATE ${INCLUDE_DIR}
 )
-target_include_directories(scrypt
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-)
-target_link_libraries(scrypt
-    PUBLIC OpenSSL::Crypto
-)
-target_link_libraries(scrypt
-    PUBLIC pbkdf2
+target_link_libraries(crypto PRIVATE
+    OpenSSL::Crypto
 )
 
-# sanit
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(pbkdf2 PUBLIC -fsanitize=address,undefined -fno-omit-frame-pointer)
-    target_compile_options(scrypt PUBLIC -fsanitize=address,undefined -fno-omit-frame-pointer)
-    target_link_options   (pbkdf2 PUBLIC -fsanitize=address,undefined -fno-omit-frame-pointer)
-    target_link_options   (scrypt PUBLIC -fsanitize=address,undefined -fno-omit-frame-pointer)
+# link proto lib
+add_library(proto STATIC
+    ${SOURCE_CODE_DIR}/proto/proto.c
+)
+
+target_include_directories(proto
+    PRIVATE ${INCLUDE_DIR}
+)
+
+# main prog
+set(STEAM_SDK ${PROJECT_SOURCE_DIR}/external/SteamworksSDK)
+
+add_executable(alopin 
+    ${SOURCE_CODE_DIR}/alopin.cpp
+)
+target_include_directories(alopin 
+    PRIVATE ${INCLUDE_DIR}
+    PRIVATE ${STEAM_SDK}/public
+)
+target_link_libraries(alopin
+    PRIVATE proto
+    PRIVATE crypto
+    PRIVATE ${STEAM_SDK}/redistributable_bin/win64/steam_api64.lib
+)
+
+if(WIN32)
+  add_custom_command(TARGET alopin POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${STEAM_SDK}/redistributable_bin/win64/steam_api64.dll"
+      $<TARGET_FILE_DIR:alopin>
+  )
+
+  add_custom_command(TARGET alopin POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${PROJECT_SOURCE_DIR}/src/steam_appid.txt"
+    $<TARGET_FILE_DIR:alopin>
+    )
+
+else()
+    message(FATAL_ERROR "ONLY WINDOWS STEAM SDK!")
 endif()
 
 # tests

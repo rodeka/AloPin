@@ -3,7 +3,7 @@
 #include <string.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
-#include "pbkdf2.h"
+#include "crypto/pbkdf2.h"
 
 #define R 8
 #define SALSA_ROUNDS 8

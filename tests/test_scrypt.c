@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <openssl/evp.h>
 #include <openssl/kdf.h>
-#include "scrypt.h"
+#include "crypto/scrypt.h"
 
 START_TEST(test_scrypt_same_as_OpenSSL){
     const unsigned char password[] = {'1', '2', '3', '4'};
@@ -10,9 +10,8 @@ START_TEST(test_scrypt_same_as_OpenSSL){
     uint32_t N = 8192;
     uint32_t r = 8;
     uint32_t p = 1;
-    uint32_t dkLen = 32;
-    uint8_t dk1[dkLen];
-    uint8_t dk2[dkLen];
+    uint8_t dk1[32];
+    uint8_t dk2[32];
 
     scrypt((const unsigned char*)password, sizeof(password), (const unsigned char*)salt, sizeof(salt), N, r, p, dk1, sizeof(dk1));
 
@@ -58,14 +57,14 @@ START_TEST(test_scrypt_same_as_OpenSSL){
         ck_abort();
     }
     
-    size_t outlen = dkLen;
+    size_t outlen = sizeof(dk2);
     if (EVP_PKEY_derive(pctx, dk2, &outlen) <= 0) {
         fprintf(stderr, "EVP_PKEY_derive failed\n");
         EVP_PKEY_CTX_free(pctx);
         ck_abort();
     }
     EVP_PKEY_CTX_free(pctx);
-    ck_assert_mem_eq(dk1, dk2, dkLen);
+    ck_assert_mem_eq(dk1, dk2, outlen);
 }
 
 
