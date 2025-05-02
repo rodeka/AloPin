@@ -1,4 +1,5 @@
 #include "crypto/hmac_sha256.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
