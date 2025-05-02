@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/evp.h>
-#include <openssl/sha.h>
 #include "crypto/pbkdf2.h"
 
 #define R 8
@@ -26,7 +24,7 @@ static inline uint32_t le_to_uint32(const uint8_t *p) {
            ((uint32_t)p[3] << 24);
 }
 
-void salsa20_8(uint8_t *out, const uint8_t *in)
+void salsa20_8(uint8_t* out, const uint8_t* in)
 {
     uint32_t x[16], orig[16];
 
@@ -85,7 +83,7 @@ void salsa20_8(uint8_t *out, const uint8_t *in)
 }
 
 
-void BlockMix(uint8_t *out, const uint8_t *in)
+void BlockMix(uint8_t* out, const uint8_t* in)
 {
     uint8_t X[64];
     memcpy(X, in + (2 * R - 1) * 64, 64);
@@ -103,13 +101,13 @@ void BlockMix(uint8_t *out, const uint8_t *in)
     }
 }
 
-static inline uint64_t integerify(const uint8_t *X)
+static inline uint64_t integerify(const uint8_t* X)
 {
     const uint8_t *last64 = X + (128 * R - 64);
     return (uint64_t)le_to_uint32(last64) | ((uint64_t)le_to_uint32(last64 + 4) << 32);
 }
 
-void ROMix(uint8_t *B, uint32_t N)
+void ROMix(uint8_t* B, uint32_t N)
 {
     const size_t blk = 128 * R;
     uint8_t *V = malloc((size_t)N * blk);
@@ -143,10 +141,10 @@ void ROMix(uint8_t *B, uint32_t N)
 }
 
 
-void scrypt(const uint8_t *P, uint32_t plen, const uint8_t *S, uint32_t slen, uint32_t N, uint32_t r, uint32_t p, uint8_t *out, uint32_t dkLen)
+void scrypt(const uint8_t* P, uint32_t plen, const uint8_t* S, uint32_t slen, uint32_t N, uint32_t r, uint32_t p, uint8_t* out, uint32_t dkLen)
 {
     const size_t B_len = (size_t)p * 128 * r;
-    uint8_t *B = (uint8_t *)malloc(B_len);
+    uint8_t* B = (uint8_t*)malloc(B_len);
 
     pbkdf2_hmac_sha256(P, plen, S, slen, 1, B_len, B);
 

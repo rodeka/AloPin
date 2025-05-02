@@ -2,10 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <openssl/evp.h>
-#include <openssl/hmac.h>
-#include <openssl/sha.h>
 #include "crypto/pbkdf2.h"
+#include "crypto/hmac_sha256.h"
 
 
 void int_to_bytes(uint32_t i, uint8_t* out){
@@ -23,12 +21,12 @@ void pbkdf2_hmac_sha256_F(const uint8_t* P, uint32_t plen, const uint8_t* S, uin
     uint8_t* U_prev = malloc(hlen);
     uint8_t* U_result = malloc(hlen);
 
-    HMAC(EVP_sha256(), P, plen, salt_block, slen + 4, U_prev, NULL);
+    hmac_sha256(P, plen, salt_block, slen + 4, U_prev);
     free(salt_block);
     memcpy(U_result, U_prev, hlen);
 
     for(uint32_t j = 2; j <= c; j++){
-        HMAC(EVP_sha256(), P, plen, U_prev, hlen, U_prev, NULL);
+        hmac_sha256(P, plen, U_prev, hlen, U_prev);
 
         for(uint32_t k = 0; k < hlen; k++){
             U_result[k] ^= U_prev[k];

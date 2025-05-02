@@ -84,7 +84,7 @@ START_TEST(test_scrypt_same_behaviour){
     ck_assert_mem_eq(dk1, dk2, sizeof(dk1));
 }
 
-Suite* pbkdf2_suite(void){
+Suite* scrypt_suite(){
     Suite* s = suite_create("SCRYPT");
     TCase* tc_scrypt_same_behaviour = tcase_create("SCRYPT_same_behavior");
     TCase* tc_scrypt_same_as_OpenSSL = tcase_create("SCRYPT_same_as_OpenSSL");
@@ -96,9 +96,9 @@ Suite* pbkdf2_suite(void){
     return s;
 }
 
-int main(void){
+int main(){
     int fail_count;
-    Suite* s = pbkdf2_suite();
+    Suite* s = scrypt_suite();
     SRunner* sr = srunner_create(s);
 
     srunner_run_all(sr, CK_NORMAL);

@@ -6,34 +6,22 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# WARNINGS
-# add_compile_options(-Wall)
-# if(WIN32)
-#     add_compile_options(-WX)
-# elseif()
-#     add_compile_options(-Wextra)
-# endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<CONFIG>")
 
 set(SOURCE_CODE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
-# find libs
-find_package(OpenSSL 1.1 REQUIRED COMPONENTS Crypto)
-
 # crypto lib
-
 add_library(crypto STATIC
     ${SOURCE_CODE_DIR}/crypto/pbkdf2.c
     ${SOURCE_CODE_DIR}/crypto/scrypt.c
+    ${SOURCE_CODE_DIR}/crypto/sha256.c
+    ${SOURCE_CODE_DIR}/crypto/hmac_sha256.c
 )
 
 target_include_directories(crypto
     PRIVATE ${INCLUDE_DIR}
-)
-target_link_libraries(crypto PRIVATE
-    OpenSSL::Crypto
 )
 
 # link proto lib

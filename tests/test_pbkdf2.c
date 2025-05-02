@@ -32,7 +32,7 @@ START_TEST(test_pbkdf2_same_behaviour){
     ck_assert_mem_eq(dk1, dk2, sizeof(dk1));
 }
 
-Suite* pbkdf2_suite(void){
+Suite* pbkdf2_suite(){
     Suite* s = suite_create("PBKDF2");
     TCase* tc_pbkdf2_same_as_OpenSSL = tcase_create("PBKDF2_same_as_in_OpenSSL");
     TCase* tc_pbkdf2_same_behaviour = tcase_create("PBKDF2_same_behavior");
@@ -45,7 +45,7 @@ Suite* pbkdf2_suite(void){
     return s;
 }
 
-int main(void){
+int main(){
     int fail_count;
     Suite* s = pbkdf2_suite();
     SRunner* sr = srunner_create(s);
