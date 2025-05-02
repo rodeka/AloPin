@@ -6,7 +6,6 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/$<CONFIG>")
 
 set(SOURCE_CODE_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -19,7 +18,6 @@ add_library(crypto STATIC
     ${SOURCE_CODE_DIR}/crypto/sha256.c
     ${SOURCE_CODE_DIR}/crypto/hmac_sha256.c
 )
-
 target_include_directories(crypto
     PRIVATE ${INCLUDE_DIR}
 )
@@ -28,7 +26,6 @@ target_include_directories(crypto
 add_library(proto STATIC
     ${SOURCE_CODE_DIR}/proto/proto.c
 )
-
 target_include_directories(proto
     PRIVATE ${INCLUDE_DIR}
 )
@@ -60,8 +57,7 @@ if(WIN32)
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${PROJECT_SOURCE_DIR}/src/steam_appid.txt"
     $<TARGET_FILE_DIR:alopin>
-    )
-
+  )
 else()
     message(FATAL_ERROR "ONLY WINDOWS STEAM SDK!")
 endif()

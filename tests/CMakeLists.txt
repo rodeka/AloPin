@@ -3,8 +3,6 @@ add_executable(test_scrypt test_scrypt.c)
 add_executable(test_sha256 test_sha256.c)
 add_executable(test_hmac_sha256 test_hmac_sha256.c)
 
-find_package(OpenSSL 1.1 REQUIRED COMPONENTS Crypto)
-
 if (WIN32)
     find_package(check CONFIG REQUIRED)             # provided by vcpkg
     set(CHECK_TARGET Check::checkShared)            # or Check::checkShared
@@ -13,43 +11,38 @@ else()
     set(CHECK_TARGET PkgConfig::CHECK)
 endif()
 
+# test pbkdf2
 target_link_libraries(test_pbkdf2
     PRIVATE crypto
-    PRIVATE OpenSSL::Crypto                         # OpenSSL 
     PRIVATE ${CHECK_TARGET}                         # check framework
 )
-
 target_include_directories(test_pbkdf2
     PRIVATE ${INCLUDE_DIR}
 )
 
-
+# test scrypt
 target_link_libraries(test_scrypt
     PRIVATE crypto
-    PRIVATE OpenSSL::Crypto                         # OpenSSL 
     PRIVATE ${CHECK_TARGET}                         # check framework
 )
-
 target_include_directories(test_scrypt
     PRIVATE ${INCLUDE_DIR}
 )
 
-
+# test sha256
 target_link_libraries(test_sha256
     PRIVATE crypto
     PRIVATE ${CHECK_TARGET}                         # check framework
 )
-
 target_include_directories(test_sha256
     PRIVATE ${INCLUDE_DIR}
 )
 
-
+# test hmac_sha256
 target_link_libraries(test_hmac_sha256
     PRIVATE crypto
     PRIVATE ${CHECK_TARGET}                         # check framework
 )
-
 target_include_directories(test_hmac_sha256
     PRIVATE ${INCLUDE_DIR}
 )

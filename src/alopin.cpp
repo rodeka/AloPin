@@ -20,11 +20,17 @@ bool brute_pass(uint8_t hash_type, uint8_t** salt, uint8_t** hash){
                     const char pass[4] = {a, b, c, d};
                     uint8_t newhash[32];
                     uint32_t newhash_size = 32;
-                    if(hash_type == 6)
-                        scrypt((const uint8_t*)pass, 4, *salt, 8, 8192, 8, 1, newhash, newhash_size);
-                    if(hash_type == 4)
-                        pbkdf2_hmac_sha256((const uint8_t*)pass, 4, *salt, 8, 10000, newhash_size, newhash);
-                    
+                    switch (hash_type){
+                        case 4:
+                            pbkdf2_hmac_sha256((const uint8_t*)pass, 4, *salt, 8, 10000, newhash, newhash_size);
+                            break;
+                        case 6:
+                            scrypt((const uint8_t*)pass, 4, *salt, 8, 8192, 8, 1, newhash, newhash_size);
+                            break;
+                        default:
+                            return false;
+                    }
+
                     if(memcmp(*hash, newhash, newhash_size) == 0){
                         printf("\nPassword find: ");
                         for(int i = 0; i < 4; i++){
@@ -42,8 +48,7 @@ bool brute_pass(uint8_t hash_type, uint8_t** salt, uint8_t** hash){
 }
 
 
-int main()
-{
+int main(int argc, char* argv[]){
     if (!SteamAPI_Init()) {
         fprintf(stderr, "Error: Cannot init Steam API\n");
         return 1;
@@ -80,10 +85,11 @@ int main()
         SteamAPI_Shutdown();
         return -1;
     }
+    SteamAPI_Shutdown();
 
     uint8* data_ptr;
     uint32 data_size;
-    if(!extract_field_raw((uint8_t*)msg_ptr, msg_size, 1, &data_ptr, &data_size)){
+    if(!proto_extract_field_raw((uint8_t*)msg_ptr, msg_size, 1, &data_ptr, &data_size)){
         fprintf(stderr, "Error: cannot find parental data :(\n");
         free(msg_ptr);
         return -1;
@@ -91,19 +97,17 @@ int main()
     free(msg_ptr);
 
     // isEnable Family View?
-    uint8_t* isEnable = false;
+    uint8_t* isEnable;
     uint32_t isEnable_size;
 
-    if(!extract_field_raw(data_ptr, data_size, 9, &isEnable, &isEnable_size)){
+    if(!proto_extract_field_raw(data_ptr, data_size, 9, &isEnable, &isEnable_size)){
         fprintf(stderr, "Error: cannot find isEnable Parental\n");
         free(data_ptr);
-        SteamAPI_Shutdown();
         return -1;
     }
 
     if(!*isEnable){
-        printf("Family View disabled.\n");
-
+        printf("Family View is disabled.\n");
         free(data_ptr);
         return(0);
     }
@@ -113,10 +117,9 @@ int main()
     uint8_t* passhashtype;
     uint32_t passhashtype_size;
     
-    if(!extract_field_raw(data_ptr, data_size, 6, &passhashtype, &passhashtype_size)){
+    if(!proto_extract_field_raw(data_ptr, data_size, 6, &passhashtype, &passhashtype_size)){
         fprintf(stderr, "Error: cannot find password hash type\n");
         free(data_ptr);
-        SteamAPI_Shutdown();
         return -1;
     }
 
@@ -134,11 +137,10 @@ int main()
     uint8_t* salt;
     uint32_t salt_size;
 
-    if(!extract_field_raw(data_ptr, data_size, 7, &salt, &salt_size)){
+    if(!proto_extract_field_raw(data_ptr, data_size, 7, &salt, &salt_size)){
         fprintf(stderr, "Error: cannot find salt\n");
         free(passhashtype);
         free(data_ptr);
-        SteamAPI_Shutdown();
         return -1;
     }
 
@@ -147,7 +149,6 @@ int main()
         free(salt);
         free(passhashtype);
         free(data_ptr);
-        SteamAPI_Shutdown();
         return -1;
     }
 
@@ -162,12 +163,11 @@ int main()
     uint8_t* passhash;
     uint32_t passhash_size;
 
-    if(!extract_field_raw(data_ptr, data_size, 8, &passhash, &passhash_size)){
+    if(!proto_extract_field_raw(data_ptr, data_size, 8, &passhash, &passhash_size)){
         fprintf(stderr, "Error: cannot find password hash type\n");
         free(salt);
         free(passhashtype);
         free(data_ptr);
-        SteamAPI_Shutdown();
         return -1;
     }
 
@@ -177,7 +177,6 @@ int main()
         free(salt);
         free(passhashtype);
         free(data_ptr);
-        SteamAPI_Shutdown();
         return -1;
     }
 
@@ -193,8 +192,5 @@ int main()
     free(salt);
     free(passhashtype);
     free(data_ptr);
-    SteamAPI_Shutdown();
-
-    system("pause");
     return 0;
 }

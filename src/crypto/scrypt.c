@@ -1,37 +1,36 @@
+#include "crypto/scrypt.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "crypto/pbkdf2.h"
 
 #define R 8
-#define SALSA_ROUNDS 8
 
 static inline uint32_t ROTL32(uint32_t v, unsigned c) {
     return (v << c) | (v >> (32 - c));
 }
 
-void uint32_to_le(uint32_t v, uint8_t *p) {
+static void uint32_to_le(uint32_t v, uint8_t *p){
     p[0] = (uint8_t)(v);
     p[1] = (uint8_t)(v >> 8);
     p[2] = (uint8_t)(v >> 16);
     p[3] = (uint8_t)(v >> 24);
 }
 
-static inline uint32_t le_to_uint32(const uint8_t *p) {
+static inline uint32_t le_to_uint32(const uint8_t *p){
     return (uint32_t)p[0] |
            ((uint32_t)p[1] << 8) |
            ((uint32_t)p[2] << 16) |
            ((uint32_t)p[3] << 24);
 }
 
-void salsa20_8(uint8_t* out, const uint8_t* in)
-{
+static void salsa20_8(uint8_t* out, const uint8_t* in){
     uint32_t x[16], orig[16];
 
     for (int i = 0; i < 16; i++)
         orig[i] = x[i] = le_to_uint32(in + 4 * i);
 
-    for (int i = 0; i < SALSA_ROUNDS; i += 2) {
+    for (int i = 0; i < 8; i += 2) {
         // column round
         x[ 4] ^= ROTL32(x[ 0] + x[12], 7);
         x[ 8] ^= ROTL32(x[ 4] + x[ 0], 9);
@@ -83,8 +82,7 @@ void salsa20_8(uint8_t* out, const uint8_t* in)
 }
 
 
-void BlockMix(uint8_t* out, const uint8_t* in)
-{
+static void BlockMix(uint8_t* out, const uint8_t* in){
     uint8_t X[64];
     memcpy(X, in + (2 * R - 1) * 64, 64);
 
@@ -101,14 +99,12 @@ void BlockMix(uint8_t* out, const uint8_t* in)
     }
 }
 
-static inline uint64_t integerify(const uint8_t* X)
-{
+static inline uint64_t integerify(const uint8_t* X){
     const uint8_t *last64 = X + (128 * R - 64);
     return (uint64_t)le_to_uint32(last64) | ((uint64_t)le_to_uint32(last64 + 4) << 32);
 }
 
-void ROMix(uint8_t* B, uint32_t N)
-{
+static void ROMix(uint8_t* B, uint32_t N){
     const size_t blk = 128 * R;
     uint8_t *V = malloc((size_t)N * blk);
     uint8_t *X = malloc(blk);
@@ -141,17 +137,16 @@ void ROMix(uint8_t* B, uint32_t N)
 }
 
 
-void scrypt(const uint8_t* P, uint32_t plen, const uint8_t* S, uint32_t slen, uint32_t N, uint32_t r, uint32_t p, uint8_t* out, uint32_t dkLen)
-{
+void scrypt(const unsigned char* P, size_t p_len, const unsigned char* S, size_t s_len, int N, int r, int p, unsigned char* out, size_t out_len){
     const size_t B_len = (size_t)p * 128 * r;
     uint8_t* B = (uint8_t*)malloc(B_len);
 
-    pbkdf2_hmac_sha256(P, plen, S, slen, 1, B_len, B);
+    pbkdf2_hmac_sha256(P, p_len, S, s_len, 1, B, B_len);
 
     for (uint32_t i = 0; i < p; i++)
         ROMix(B + (size_t)i * 128 * r, N);
 
-    pbkdf2_hmac_sha256(P, plen, B, B_len, 1, dkLen, out);
+    pbkdf2_hmac_sha256(P, p_len, B, B_len, 1, out, out_len);
 
     free(B);
 }

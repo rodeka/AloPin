@@ -23,7 +23,7 @@ void hmac_sha256(const uint8_t* key, size_t key_len, const uint8_t* msg, size_t 
     }
 
     uint8_t* inner_buf = malloc(SHA256_BLOCK_SIZE + msg_len);
-    uint8_t* inner_hash = malloc(SHA256_DIGEST_LENGTH);
+    uint8_t* inner_hash[SHA256_DIGEST_LENGTH];
     memcpy(inner_buf, ipad, SHA256_BLOCK_SIZE);
     memcpy(inner_buf + SHA256_BLOCK_SIZE, msg,  msg_len);
     sha256(inner_buf, SHA256_BLOCK_SIZE + msg_len, (unsigned char*)inner_hash);
@@ -33,5 +33,4 @@ void hmac_sha256(const uint8_t* key, size_t key_len, const uint8_t* msg, size_t 
     memcpy(outer_buf, opad, SHA256_BLOCK_SIZE);
     memcpy(outer_buf + SHA256_BLOCK_SIZE, inner_hash, SHA256_DIGEST_LENGTH);
     sha256(outer_buf, SHA256_BLOCK_SIZE + SHA256_DIGEST_LENGTH, mac);
-    free(inner_hash);
 }

@@ -4,7 +4,7 @@
 #include "crypto/hmac_sha256.h"
 
 
-START_TEST(test_sha256_check_behaviour){
+START_TEST(test_hmac_sha256_check_behaviour){
     const unsigned char text[] = "Just test to check hmac_sha256 behaviour as normal hmac_sha256"; // don't forget about null
     const unsigned char key[] = "Abra cadabra"; // same as prev
     const unsigned char hmac_hash_check[32] = {
@@ -26,16 +26,17 @@ START_TEST(test_sha256_check_behaviour){
     free(hmac_hash);
 }
 
-START_TEST(test_sha256_same_behaviour){
+START_TEST(test_hmac_sha256_same_behaviour){
     const unsigned char text[] = "Just test to check hmac_sha256 on always same behaviour";
+    const unsigned char key[] = "Abra kadabra2";
 
     unsigned char* hmac_hash1 = malloc(SHA256_DIGEST_LENGTH);
     ck_assert_ptr_nonnull(hmac_hash1);
     unsigned char* hmac_hash2 = malloc(SHA256_DIGEST_LENGTH);
     ck_assert_ptr_nonnull(hmac_hash2);
 
-    sha256(text, sizeof(text), hmac_hash1);
-    sha256(text, sizeof(text), hmac_hash2);
+    hmac_sha256(key, sizeof(key), text, sizeof(text), hmac_hash1);
+    hmac_sha256(key, sizeof(key), text, sizeof(text), hmac_hash2);
 
     if (memcmp(hmac_hash1, hmac_hash2, SHA256_DIGEST_LENGTH) != 0) {
         free(hmac_hash1);
@@ -50,11 +51,11 @@ Suite* hmac_sha256_suite(){
     Suite* s = suite_create("HMAC_SHA256");
 
     TCase* tc_hmac_sha256_check_behaviour = tcase_create("SHA256_check_behaviour");
-    tcase_add_test(tc_hmac_sha256_check_behaviour, test_sha256_check_behaviour);
+    tcase_add_test(tc_hmac_sha256_check_behaviour, test_hmac_sha256_check_behaviour);
     suite_add_tcase(s, tc_hmac_sha256_check_behaviour);
 
     TCase* tc_hmac_sha256_same_behaviour = tcase_create("SHA256_same_behavior");
-    tcase_add_test(tc_hmac_sha256_same_behaviour, test_sha256_same_behaviour);
+    tcase_add_test(tc_hmac_sha256_same_behaviour, test_hmac_sha256_same_behaviour);
     suite_add_tcase(s, tc_hmac_sha256_same_behaviour);
 
     return s;
@@ -65,7 +66,6 @@ int main(){
     Suite* s = hmac_sha256_suite();
     SRunner* sr = srunner_create(s);
 
-    srunner_set_fork_status(sr, CK_NOFORK);
     srunner_run_all(sr, CK_NORMAL);
     fail_count = srunner_ntests_failed(sr);
     srunner_free(sr);

@@ -64,7 +64,6 @@ int main(){
     Suite* s = hmac_sha256_suite();
     SRunner* sr = srunner_create(s);
 
-    srunner_set_fork_status(sr, CK_NOFORK);
     srunner_run_all(sr, CK_NORMAL);
     fail_count = srunner_ntests_failed(sr);
     srunner_free(sr);

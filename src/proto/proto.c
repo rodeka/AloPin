@@ -54,7 +54,7 @@ static int skip_field(const uint8_t* buf, uint32_t buf_len, uint32_t* offset, ui
 }
 
 
-int extract_field_raw(const uint8_t *buf, uint32_t buf_len, uint32_t field_number, uint8_t **out_data, uint32_t *out_len){
+int proto_extract_field_raw(const uint8_t *buf, uint32_t buf_len, uint32_t field_number, uint8_t **out_data, uint32_t *out_len){
     uint32_t offset = 0;
     while (offset < buf_len) {
         uint64_t key;
