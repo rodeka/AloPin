@@ -1,4 +1,5 @@
 #include <proto/proto.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 static int read_varint(const uint8_t* buf, uint32_t buf_len, uint32_t* offset, uint64_t* value, uint32_t* varint_len){
@@ -54,7 +55,7 @@ static int skip_field(const uint8_t* buf, uint32_t buf_len, uint32_t* offset, ui
 }
 
 
-int proto_extract_field_raw(const uint8_t *buf, uint32_t buf_len, uint32_t field_number, uint8_t **out_data, uint32_t *out_len){
+int proto_extract_field_raw(const unsigned char* buf, size_t buf_len, int field_number, unsigned char** out_data, size_t* out_len){
     uint32_t offset = 0;
     while (offset < buf_len) {
         uint64_t key;
