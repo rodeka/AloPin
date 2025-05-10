@@ -1,9 +1,8 @@
 #include <cstdio>
-#include <cstdint>
+#include <ctype.h>
 #include <thread>
 #include <chrono>
-#include <ctype.h>
-#include <stdint.h>
+#include <fstream>
 #include <steam/steam_api.h>
 
 extern "C" {
@@ -22,7 +21,6 @@ typedef struct{
     size_t hash_size;
     int hashtype;
 } ALOPIN_CTX;
-
 
 bool brute_pin(ALOPIN_CTX* ctx){
     for(char a = '0'; a <= '9'; a++){
@@ -46,7 +44,7 @@ bool brute_pin(ALOPIN_CTX* ctx){
                     }
 
                     if(memcmp(ctx->hash, newhash, newhash_size) == 0){
-                        printf("\nPIN find: ");
+                        printf("\nPIN found: ");
                         for(int i = 0; i < 4; i++){
                             printf("%c", pin[i]);
                         }
@@ -110,7 +108,30 @@ static int hex_to_bytes(const char* hex_string, unsigned char** byte_sequence, s
     return 0;
 }
 
+int createSteamAppid(){
+    FILE* steamid_file = fopen("steam_appid.txt", "w");
+    if(steamid_file == NULL){
+        fprintf(stderr, "Error: Cannot create file steam_appid.txt\n");
+        return -1;
+    }
+    fprintf(steamid_file, "480");
+    fclose(steamid_file);
+    return 0;
+}
+
+int removeSteamAppid(){
+    if(remove("steam_appid.txt") != 0){
+        fprintf(stderr, "Error: Cannot delete steam_appid.txt\n");
+        return -1;
+    }
+    return 0;
+}
+
 int alopinUpdateSteam(ALOPIN_CTX* ctx){
+    if(createSteamAppid() != 0){
+        return -1;
+    }
+
     if (!SteamAPI_Init()) {
         fprintf(stderr, "Error: Cannot init Steam API\n");
         return -1;
@@ -219,7 +240,9 @@ int alopinUpdateSteam(ALOPIN_CTX* ctx){
         fprintf(stderr, "Error: hash size is not 32: %zu\n", ctx->hash_size);
         return -1;
     }
-
+    if(removeSteamAppid() != 0){
+        return -1;
+    }
     return 0;
 }
 
