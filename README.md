@@ -42,7 +42,7 @@ A tool for recovering (brute-forcing) the Family View PIN. This project was insp
    ```
 
    - Static libraries (`crypto.lib`, `proto.lib`) appear in `build/lib/Release/`.
-   - The executable (`alopin.exe`) and DLLs are in `build/Release/`.
+   - The executable (`alopin.exe`) and DLLs are in `build/bin/Release/`.
 
 ---
 
